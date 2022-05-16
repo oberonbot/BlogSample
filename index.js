@@ -27,9 +27,15 @@ app.listen(4000, ()=>{
     console.log('App listening on port 4000')
 })
 
-app.get('/',(req,res)=>{
+app.get('/',async (req,res)=>{
     // res.sendFile(path.resolve(__dirname, 'pages/index.html'))
-    res.render('index')  // res.render() will look in a 'views' folder for the file index.ejs(template)
+    const blogposts = await BlogPost.find({})
+    console.log(blogposts)
+    res.render('index', {
+        // this is to send view with data we read back to the client browser by using the 2nd argument
+        // blogposts: blogposts
+        blogposts  // if key name and value name are the same, we can shorten it to just blogposts
+    })  // res.render() will look in a 'views' folder for the file index.ejs(template)
 })
 
 app.get('/about',(req,res)=>{
@@ -52,7 +58,17 @@ app.get('/post/new',(req,res)=>{
     res.render('create')
 })
 
-app.post('/posts/store', (req,res)=>{
-    console.log(req)
+// app.post('/posts/store', (req,res)=>{
+//     // model creates a new doc with browser data
+//     BlogPost.create(req.body, (error, blogpost) => { // callback function which is called when create finishes execution
+//         console.log(error, blogpost)
+//         res.redirect('/')
+//     })
+// })
+
+/* to resolve callback hell problem, use async and await,
+so redirection will wait for BlogPost.create finished and then executed */
+app.post('/posts/store', async(req, res) => {
+    await BlogPost.create(req.body)
     res.redirect('/')
 })
