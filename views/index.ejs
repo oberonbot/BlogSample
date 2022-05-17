@@ -22,12 +22,23 @@
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="col-md-10 col-lg-8 col-xl-7">
+                        <form action="/search" method="POST">
+                            <div class="form-floating">
+                                <label>Key Word</label>
+                                <input class="form-control" id="keyword" name="keyword" type="text">
+                            </div>
+                            <br />
+                            <!-- Submit Button-->
+                            <button id="submitButton" type="submit">Send</button>
+                        </form>
+                    </div>
                     <% for (var i = 0; i < blogposts.length; i++){ %>  <!-- -->
                     <!-- Divider-->
                     <hr class="my-4" />
                     <!-- Post preview-->
                     <div class="post-preview">
-                        <a href="/post">
+                        <a href="/post/ <%= blogposts[i]._id %> ">
                             <h2 class="post-title">
                                 <%= blogposts[i].title %>
                             </h2>
@@ -37,8 +48,8 @@
                         </a>
                         <p class="post-meta">
                             Posted by
-                            <a href="#!">Start Bootstrap</a>
-                            on July 8, 2022
+                            <a href="#!"><%= blogposts[i].username %></a>
+                            on <%= blogposts[i].datePosted.toDateString() %>
                         </p>
                     </div>
                     <% } %>

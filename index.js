@@ -6,6 +6,7 @@ const ejs = require('ejs')  // template engine
 const mongoose = require('mongoose')  // Mongoose is an officially supported Node.js package helping to talk to MongoDB from Node
 const bodyParser = require('body-parser')  // body-parser parse incoming request bodies in a middleware and make the form data available under the req.body property
 const BlogPost = require('./models/BlogPost')  // import BlogPost model
+
 mongoose.connect('mongodb://localhost/my_database', {useNewUrlParser: true}) // it there isn't one, then create it
 
 const app = new express()
@@ -30,12 +31,24 @@ app.listen(4000, ()=>{
 app.get('/',async (req,res)=>{
     // res.sendFile(path.resolve(__dirname, 'pages/index.html'))
     const blogposts = await BlogPost.find({})
-    console.log(blogposts)
+    // console.log(blogposts)
     res.render('index', {
         // this is to send view with data we read back to the client browser by using the 2nd argument
         // blogposts: blogposts
         blogposts  // if key name and value name are the same, we can shorten it to just blogposts
     })  // res.render() will look in a 'views' folder for the file index.ejs(template)
+})
+
+app.post('/search', async(req, res) => {
+    var keyword = req.body.keyword
+    var regex = new RegExp(keyword,"i");
+
+    const blogposts = await BlogPost.find({
+        title: regex
+    })
+    res.render('index', {
+        blogposts
+    })
 })
 
 app.get('/about',(req,res)=>{
@@ -48,23 +61,18 @@ app.get('/contact',(req,res)=>{
     res.render('contact')
 })
 
-app.get('/post',(req,res)=>{
-    // res.sendFile(path.resolve(__dirname, 'pages/post.html'))
-    res.render('post')
+app.get('/post/:id', async (req,res)=>{
+    var id = req.params.id.substring(1)
+    const blogpost = await BlogPost.findById(id)
+    res.render('post', {  // use post.ejs(html) as page and blogpost as data source
+        blogpost
+    })
 })
 
-app.get('/post/new',(req,res)=>{
+app.get('/posts/new',(req,res)=>{
     // res.sendFile(path.resolve(__dirname, 'pages/post.html'))
     res.render('create')
 })
-
-// app.post('/posts/store', (req,res)=>{
-//     // model creates a new doc with browser data
-//     BlogPost.create(req.body, (error, blogpost) => { // callback function which is called when create finishes execution
-//         console.log(error, blogpost)
-//         res.redirect('/')
-//     })
-// })
 
 /* to resolve callback hell problem, use async and await,
 so redirection will wait for BlogPost.create finished and then executed */

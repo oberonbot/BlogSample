@@ -4,8 +4,10 @@ const BlogPost = require('../models/BlogPost') // import the model we just creat
 mongoose.connect('mongodb://localhost/my_database', {useNewUrlParser: true})  // connect to the database,
 
 BlogPost.create({
-    title: "Let's try another blog",
-    body: "So I'm practicing Node.js right, and I'm about to practice the create command, this is amazing"
+    title: "Lala Land",
+    body: "La La Land is a 2016 American romantic musical comedy-drama film written and directed by Damien Chazelle. It stars Ryan Gosling and Emma Stone as a ...",
+    username: 'Ethan',
+    datePosted: new Date()
 }, (error, blogpost) => { // callback function which is called when create finishes execution
     console.log(error, blogpost)
 })
