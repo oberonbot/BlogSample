@@ -8,7 +8,8 @@ const BlogPostSchema = new Schema({   // Schema is the format of the document
     datePosted: {
         type: Date,
         default: new Date()
-    }
+    },
+    image: String
 })
 
 const BlogPost = mongoose.model('BlogPost', BlogPostSchema)  // .model will create 'BlogPosts' as the collection

@@ -6,15 +6,26 @@ const ejs = require('ejs')  // template engine
 const mongoose = require('mongoose')  // Mongoose is an officially supported Node.js package helping to talk to MongoDB from Node
 const bodyParser = require('body-parser')  // body-parser parse incoming request bodies in a middleware and make the form data available under the req.body property
 const BlogPost = require('./models/BlogPost')  // import BlogPost model
+const fileUpload = require('express-fileupload')
 
 mongoose.connect('mongodb://localhost/my_database', {useNewUrlParser: true}) // it there isn't one, then create it
 
 const app = new express()
 
+/* All these app.use are middleware, will be executed before handling the request */
 app.use(express.static(path.join(__dirname, '/public'))); // Express will expect all static assets to be in this directory
 app.set('view engine', 'ejs')  // tell Express to use EJS as templating engine, any file ending in .ejs should be rendered with the EJS package.
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
+app.use(fileUpload())
+
+const validateMiddleWare = (req, res, next) => {  // Can create our own custom middleware
+    if(req.files == null || req.body.title == null || req.body.body == null){
+        return res.redirect('/posts/new')
+    }
+    next()
+}
+app.use('/posts/store', validateMiddleWare) // to apply middleware for specific url requests
 
 /*
 * const http = require('http)
@@ -39,44 +50,26 @@ app.get('/',async (req,res)=>{
     })  // res.render() will look in a 'views' folder for the file index.ejs(template)
 })
 
-app.post('/search', async(req, res) => {
-    var keyword = req.body.keyword
-    var regex = new RegExp(keyword,"i");
+const handleSearchController = require('./controllers/handleSearch')
+app.post('/search', handleSearchController)
 
-    const blogposts = await BlogPost.find({
-        title: regex
-    })
-    res.render('index', {
-        blogposts
-    })
-})
+// app.get('/about',(req,res)=>{
+//     // res.sendFile(path.resolve(__dirname, 'pages/about.html'))
+//     res.render('about')
+// })
+//
+// app.get('/contact',(req,res)=>{
+//     // res.sendFile(path.resolve(__dirname, 'pages/contact.html'))
+//     res.render('contact')
+// })
 
-app.get('/about',(req,res)=>{
-    // res.sendFile(path.resolve(__dirname, 'pages/about.html'))
-    res.render('about')
-})
+const handleDisplayPostsController = require('./controllers/handleDisplayPosts')
+app.get('/post/:id', handleDisplayPostsController)
 
-app.get('/contact',(req,res)=>{
-    // res.sendFile(path.resolve(__dirname, 'pages/contact.html'))
-    res.render('contact')
-})
 
-app.get('/post/:id', async (req,res)=>{
-    var id = req.params.id.substring(1)
-    const blogpost = await BlogPost.findById(id)
-    res.render('post', {  // use post.ejs(html) as page and blogpost as data source
-        blogpost
-    })
-})
+const newPostController = require('./controllers/newPost')
+app.get('/posts/new', newPostController)
 
-app.get('/posts/new',(req,res)=>{
-    // res.sendFile(path.resolve(__dirname, 'pages/post.html'))
-    res.render('create')
-})
 
-/* to resolve callback hell problem, use async and await,
-so redirection will wait for BlogPost.create finished and then executed */
-app.post('/posts/store', async(req, res) => {
-    await BlogPost.create(req.body)
-    res.redirect('/')
-})
+const handlePostController = require('./controllers/handlePost')
+app.post('/posts/store', handlePostController)
