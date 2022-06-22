@@ -5,7 +5,6 @@ const path = require('path')  // the point is to ensure that things run smoothly
 const ejs = require('ejs')  // template engine
 const mongoose = require('mongoose')  // Mongoose is an officially supported Node.js package helping to talk to MongoDB from Node
 const bodyParser = require('body-parser')  // body-parser parse incoming request bodies in a middleware and make the form data available under the req.body property
-const BlogPost = require('./models/BlogPost')  // import BlogPost model
 const fileUpload = require('express-fileupload')
 
 mongoose.connect('mongodb://localhost/my_database', {useNewUrlParser: true}) // it there isn't one, then create it
@@ -19,12 +18,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(fileUpload())
 
-const validateMiddleWare = (req, res, next) => {  // Can create our own custom middleware
-    if(req.files == null || req.body.title == null || req.body.body == null){
-        return res.redirect('/posts/new')
-    }
-    next()
-}
+const validateMiddleWare = require('./middleware/validationMiddleware')
 app.use('/posts/store', validateMiddleWare) // to apply middleware for specific url requests
 
 /*
@@ -39,19 +33,11 @@ app.listen(4000, ()=>{
     console.log('App listening on port 4000')
 })
 
-app.get('/',async (req,res)=>{
-    // res.sendFile(path.resolve(__dirname, 'pages/index.html'))
-    const blogposts = await BlogPost.find({})
-    // console.log(blogposts)
-    res.render('index', {
-        // this is to send view with data we read back to the client browser by using the 2nd argument
-        // blogposts: blogposts
-        blogposts  // if key name and value name are the same, we can shorten it to just blogposts
-    })  // res.render() will look in a 'views' folder for the file index.ejs(template)
-})
+const homeController = require('./controllers/home')
+app.get('/', homeController)
 
-const handleSearchController = require('./controllers/handleSearch')
-app.post('/search', handleSearchController)
+const searchPostController = require('./controllers/searchPost')
+app.post('/search', searchPostController)
 
 // app.get('/about',(req,res)=>{
 //     // res.sendFile(path.resolve(__dirname, 'pages/about.html'))
@@ -63,13 +49,17 @@ app.post('/search', handleSearchController)
 //     res.render('contact')
 // })
 
-const handleDisplayPostsController = require('./controllers/handleDisplayPosts')
-app.get('/post/:id', handleDisplayPostsController)
-
+const getPostController = require('./controllers/getPost')
+app.get('/post/:id', getPostController)
 
 const newPostController = require('./controllers/newPost')
 app.get('/posts/new', newPostController)
 
+const storePostController = require('./controllers/storePost')
+app.post('/posts/store', storePostController)
 
-const handlePostController = require('./controllers/handlePost')
-app.post('/posts/store', handlePostController)
+const newUserController = require('./controllers/newUser')
+app.get('/auth/register', newUserController)
+
+const storeUserController = require('./controllers/storeUser')
+app.post('/users/register', storeUserController)

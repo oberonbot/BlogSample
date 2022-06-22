@@ -8,7 +8,7 @@ module.exports = (req, res) => {
     // console.log(req.files.image)
     // console.log(__dirname)
     let image = req.files.image // this one's using fileUpload middleware
-    image.mv(path.resolve(__dirname, '../public/assets/img', image.name), async (error) => {
+    image.mv(path.resolve(__dirname, '..', '/public/assets/img', image.name), async (error) => {
         await BlogPost.create({
             title: req.body.title,
             body: req.body.body,
